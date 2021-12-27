@@ -21,6 +21,7 @@ type
     procedure Jugar1Click(Sender: TObject);
     procedure Salir1Click(Sender: TObject);
 
+
   private
     User   : PCB;       //Para almacenar al personaje del usuario.  Este PCB no se encolará, y por tanto no lo manipulará el PlanificadorRR.
     Q      : Cola;      //Cola del Planificador RR.
@@ -50,7 +51,8 @@ type
     function colisionNaveUser(PRUNNAVE, PRUNUSER: PCB):bool;
     procedure RectanguloImagen(x, y : Integer; Imagen : TGraphic);
     function cargarImg(dir: string):TPngImage;
-    procedure generarExplosion(posX, posY : Integer);
+    procedure generarExplosion;
+
   public
     { Public declarations }
   end;
@@ -125,22 +127,26 @@ begin
               end;         }
 
       VK_SPACE : begin   //Crear un proceso BALAU
-                   P.Tipo  := BALAU;
-                   P.Ancho := 16;
-                   P.Alto  := 16;
+                   if Q.Cant(BALAU) < 5 then
+                   begin
+                     P.Tipo  := BALAU;
+                     P.Ancho := 16;
+                     P.Alto  := 16;
 
-                   P.x     := (User.Ancho-P.Ancho) div 2 + User.x;
-                   P.y     :=  User.y - P.Alto;
+                     P.x     := (User.Ancho-P.Ancho) div 2 + User.x;
+                     P.y     :=  User.y - P.Alto;
 
-                   P.Retardo := 50;
-                   P.Hora    := GetTickCount;
-                   P.img := cargarImg('balaU.png');
-                   Dibujar(P);
+                     P.Retardo := 50;
+                     P.Hora    := GetTickCount;
+                     P.img := cargarImg('balaU.png');
+                     Dibujar(P);
 
-                   Q.Meter(P);
+                     Q.Meter(P);
+                   end;
                  end;
    end;
 end;
+
 
 procedure TForm1.InitJuego;
   var
@@ -371,7 +377,7 @@ begin  // Algoritmo para mover la bala de la nave (BALAN)
 
     if colisionUser(PRUN) then
     begin
-      generarExplosion(PRUN.x, PRUN.y);
+      generarExplosion;
       ShowMessage('Game over...');
       Estado := 1;
     end
@@ -434,13 +440,13 @@ begin
 
 end;
 
-procedure TForm1.generarExplosion(posX, posY : Integer);
+procedure TForm1.generarExplosion;
 var
   explosion: TPngImage;
 begin
   explosion := TPngImage.Create;
   explosion.LoadFromFile('explosion.png');
-  Canvas.Draw(posX, posY, explosion);
+  Canvas.Draw(User.x, User.y, explosion);
 end;
 
 function TForm1.colisionNave(PRUNBALA, PRUNNAVE:PCB):bool;
